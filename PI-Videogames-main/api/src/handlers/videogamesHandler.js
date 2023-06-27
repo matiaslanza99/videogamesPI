@@ -17,9 +17,7 @@ const getAllGamesHandler = async (req,res) => {
 
 const getGameByIDHandler = async (req,res)=>{
     const { id } = req.params;
-    const number = parseInt(id);
-    const typeid = isNaN(number) ? "bdd" : "api";
-
+    const typeid = isNaN(id) ? "bdd" : "api";
     try{
         const gameIDFound = await getGameByID(id,typeid);
         res.status(200).json(gameIDFound)
@@ -41,9 +39,10 @@ const getGameByNameHandler = async (req, res) => {
 
 const getGameByGenereHandler = async (req,res)=>{
     const {id} = req.query;
+    console.log(id)
     try{
         const gamesFound = await getGameByGenere(id);
-        res.status(200).senf(gamesFound);
+        res.status(200).json(gamesFound);
     }catch(error){
         res.status(400).json({error:error.message});
     }
@@ -52,13 +51,12 @@ const getGameByGenereHandler = async (req,res)=>{
 
 const createGameHandler = async (req,res)=>{
     const { name, description, platforms, image, released, rating , genreIds} = req.body;
+    
     try {
         const newGame = await createGame( name , description , platforms , image , released , rating ,genreIds);
         if (newGame) {
-            res.status(201).send(newGame);
-          } else {
-            res.status(200).send(newGame);
-        }
+            res.status(201).json(newGame);
+          }
       } catch (error) {
         res.status(400).json({error:error.message})
       }

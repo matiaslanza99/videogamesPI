@@ -1,6 +1,6 @@
-const {Videogames,VideogameGenres} = require("../db");
+const {Generes,Videogames,VideogameGenres} = require("../db");
 const axios = require("axios");
-const {searchGenereAPI,cleanGames,cleanGame} = require("../utils/index");
+const {cleanGames,cleanGame,cleanGamesBDD} = require("../utils/index");
 require('dotenv').config();
 const {API_KEY} = process.env;
 const { Op } = require("sequelize");
@@ -42,16 +42,19 @@ const getGameByID = async(id,typeid)=>{
       return prepare;
     }else{
       const game = await Videogames.findByPk(id)
-      return game;
+      const generes = await getGenresByGame(id);
+      const genreNames = generes.map(genre => genre.name).join(', ')
+      const prepare = cleanGamesBDD(game,genreNames)
+      return prepare;
     }
 }
 
 const getGameByName = async (name) => {
-  const lowercaseName = name.toLowerCase(); // Convertir el nombre a minúsculas
+  const lowercaseName = name.toLowerCase(); 
   const games = await Videogames.findAll({
     where: {
       name: {
-        [Op.like]: `%${lowercaseName}%`, // Utilizar coincidencia parcial con el comodín %
+        [Op.like]: `%${lowercaseName}%`,
       },
     },
   });
@@ -59,29 +62,30 @@ const getGameByName = async (name) => {
     return games;
   } else {
     const game = (await axios.get(`https://api.rawg.io/api/games?key=${API_KEY}&search=${lowercaseName}`)).data;
-    return game.results; // Devolver el juego individual como un array
+    return game.results; 
   }
 };
 
-const getGameByGenere = async(id)=>{
-    const gamesAndGeneres = VideogameGenres.findByPk(id);
-    if(gamesAndGeneres){
-        const gamesgener = await Videogames.findAll(
-          { 
+const getGameByGenere = async (id) =>{
+    const matchs = await VideogameGenres.findAll({ 
             where:{
-              id:gamesAndGeneres
+              genereId:id,
             }
-        }) 
-        return gamesgener
-    }
-}
+    });
+    const results = await Videogames.findAll({
+      where:{
+        id:matchs.map(match => match.videogameId),
+      }
+    })
+    return results;
+}        
 
 const createGame = async (name,description,platforms,image,released,rating,genreIds) => {
  
   const game = await Videogames.findOne({ where: { name } });
 
   if (game) {
-    return(`El juego con nombre: ${game.name} ya existe en la base de datos.`);
+    return ("Juego ya existente.");
   } else {
     const newGame = await Videogames.create({
       name,
@@ -91,18 +95,33 @@ const createGame = async (name,description,platforms,image,released,rating,genre
       released,
       rating
     });
-    await Promise.all(
-      genreIds.forEach(async (genreId) => {
+    const generes = await Promise.all(
+      genreIds.map(async (genreId) => {
         await VideogameGenres.create({
           videogameId: newGame.id,
           genereId: genreId,
         });
       })
     );
-
-    return `Juego con nombre: ${newGame.name} creado exitosamente.`;
+    if(generes)return newGame;
   }
 };
+
+const getGenresByGame = async (id) => {
+  const matches = await VideogameGenres.findAll({
+    where: {
+      videogameId: id,
+    },
+  });
+  console.log("estos matchearon",matches)
+  const results = await Generes.findAll({
+    where:{
+      id:matches.map(match => match.genereId),
+    }
+  })
+  console.log("estos resultaron",results)
+  return results;
+}
 
 
 

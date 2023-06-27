@@ -17,7 +17,7 @@ gamesRoutes.get("/detail/:id", getGameByIDHandler);
 
 gamesRoutes.get("/name",getGameByNameHandler);
 
-gamesRoutes.get("/genere/:genere",getGameByGenereHandler);
+gamesRoutes.get("/genere",getGameByGenereHandler);
 
 gamesRoutes.post("/create",createGameHandler);
 

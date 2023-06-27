@@ -16,12 +16,10 @@ const getAllGeneres = async () => {
             id:gener.id,
             name: gener.name  
         }));
-        
         genersToCreate.forEach(element => {
             Generes.create(element);
         });
     }
-
     const gnrBDD = await Generes.findAll();
     return gnrBDD;
 

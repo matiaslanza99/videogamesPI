@@ -1,0 +1,21 @@
+.search-box {
+    margin-left: 80px;
+}
+.search-box button{
+    border-radius:8px;
+    height: 35px;
+    margin: 10px;
+    background-color:white;
+}
+.search-box button:hover{
+  background-color: rgb(19, 6, 136);
+  color: white;
+  transition: color 1s,background-color 0.8s;
+}
+.search-box input{
+  border-radius:5px;
+  height: 26px;
+  width: 220px;
+}
+  
+  
